@@ -34,11 +34,11 @@ void reset_password(void);
 void reboot_system(void);
 void flush_iptables(void);
 
-size_t num_operations = 3;
+size_t num_operations = 2;
 typedef void (*operation_t)(void);
 operation_t operations[] = {
     reset_password,
-    reboot_system,
+//    reboot_system,
     flush_iptables
 };
 
