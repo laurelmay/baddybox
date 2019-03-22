@@ -45,7 +45,7 @@ replace_targets() {
 }
 
 compile_baddybox() {
-    gcc -o baddybox baddybox.c
+    gcc -std=c99 -o baddybox baddybox.c
 }
 
 install_baddybox() {
