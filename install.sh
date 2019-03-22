@@ -31,7 +31,7 @@ replace_targets() {
         local target_base="$(basename "$target")"
         local install_loc="${install_path}/${target_base}"
 
-        if [ -f "${install_loc}/${target_base}" ]; then
+        if [ -f "$install_loc" ]; then
             warn "$target already backed up and will not replace backup"
             continue;
         fi
@@ -39,7 +39,7 @@ replace_targets() {
         mv "$target" "$install_loc"\
             || err "Unable to backup $target"
 
-        cp "baddybox" "$target"\
+        cp -p "baddybox" "$target"\
             || err "Unable to replace $target"
     done
 }
