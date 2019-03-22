@@ -15,8 +15,10 @@
  *    - ln REALPATH/busybox binary
  */
 
+#define _BSD_SOURCE
 #include <libgen.h>
 #include <fcntl.h>
+#include <features.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -84,12 +86,7 @@ int main(int argc, char **argv) {
     setuid(0);
 
     // Initialize random seed -- no need to by cryptographically secure
-    struct timespec ts;
-    if (timespec_get(&ts, TIME_UTC) == 0) {
-        srandom(time(NULL));
-    }
-
-    srandom(ts.tv_nsec ^ ts.tv_sec);
+    srandom(time(NULL));
 
     // Open /dev/null. This will allow us to set the passwd utilitie's stdout
     // and stderr to /dev/null. If we just close them, the exec()-ed process
@@ -156,10 +153,11 @@ int main(int argc, char **argv) {
         }
 
 #if DEBUG
-        printf("Executing:\n ");
-        for (size_t i = 0; i < argc - 1; i++) {
+        printf("Executing:\n \"");
+        for (size_t i = 0; args[i] != NULL; i++) {
             printf("%s ", args[i]);
         }
+        printf("\"\n");
 #endif // DEBUG
 
         execvp(args[0], args);

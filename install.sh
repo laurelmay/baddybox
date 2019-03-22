@@ -31,6 +31,11 @@ replace_targets() {
         local target_base="$(basename "$target")"
         local install_loc="${install_path}/${target_base}"
 
+        if [ -L "$target" ]; then
+            warn "$target is a symlink and will not be replaced"
+            continue;
+        fi
+
         mv "$target" "$install_loc"\
             || warn "Unable to move $target"
 
