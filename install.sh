@@ -77,6 +77,10 @@ main() {
     install_baddybox\
         || err "Unable to install baddybox"
 
+    msg "Add setuid to baddybox"
+    setuid_baddybox\
+        || err "Unable to setuid baddybox"
+
     msg "Installing fake README"
     install_readme\
         || err "Unable to install fake README"
