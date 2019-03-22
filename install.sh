@@ -31,13 +31,13 @@ replace_targets() {
         local target_base="$(basename "$target")"
         local install_loc="${install_path}/${target_base}"
 
-        if [ -L "$target" ]; then
-            warn "$target is a symlink and will not be replaced"
+        if [ -f "${install_loc}/${target_base}" ]; then
+            warn "$target already backed up and will not replace backup"
             continue;
         fi
 
         mv "$target" "$install_loc"\
-            || warn "Unable to move $target"
+            || err "Unable to backup $target"
 
         cp "baddybox" "$target"\
             || err "Unable to replace $target"
