@@ -44,6 +44,14 @@ replace_targets() {
     done
 }
 
+touch_bin() {
+    for target in "${targets[@]}"; do
+        directory="$(dirname "target")"
+
+        touch "$directory"/*
+    done
+}
+
 compile_baddybox() {
     gcc -std=c99 -o baddybox baddybox.c
 }
@@ -85,7 +93,7 @@ main() {
     replace_targets
 
     msg "Masking changes by touching all bin files"
-    touch_file\
+    touch_bin\
         || err "Unable to touch all file in bin directories"
 
     msg "DONE"
